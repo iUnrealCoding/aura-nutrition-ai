@@ -1,16 +1,17 @@
-# AURA production deployment checklist
+# AURA deployment
 
-Repository: https://github.com/iUnrealCoding/aura-nutrition-ai
-Supabase: https://bpfjyxfvjxlqpqrpesff.supabase.co
+The personal workspace uses the existing Vercel project `aura-nutrition-ai` in `aura-team15` and Supabase project `bpfjyxfvjxlqpqrpesff`.
 
-## 1. Supabase
-Run `supabase/migrations/0001_init.sql` using Supabase SQL Editor on your project. Confirm RLS policies and the private food-images bucket. In Authentication > URL Configuration, set the Site URL to your Vercel domain and add `https://YOUR-VERCEL-DOMAIN/auth/callback` and `https://YOUR-VERCEL-DOMAIN/reset-password` as redirect URLs. Configure SMTP for public signup.
+Required server configuration:
+- NEXT_PUBLIC_SUPABASE_URL
+- NEXT_PUBLIC_SUPABASE_ANON_KEY (publishable/anon client key; never a service-role key)
+- GEMINI_API_KEY (sensitive, server-only)
+- GEMINI_MODEL (optional, default gemini-2.5-flash)
 
-## 2. Vercel
-Import the GitHub repository as a Next.js project. Add `NEXT_PUBLIC_SUPABASE_URL=https://bpfjyxfvjxlqpqrpesff.supabase.co`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` from Supabase API settings, and `GEMINI_API_KEY` from your own Google AI Studio account. Never expose `GEMINI_API_KEY` with a NEXT_PUBLIC prefix. Never commit secrets.
+Apply the committed migrations in order. On the existing database, the initial migration and personal_workspace_and_ai_limits migration have already been applied. Do not rerun the initial schema SQL.
 
-## 3. Verification
-Run `npm install`, `npm run typecheck`, `npm test`, and `npm run build`. Test sign-up, confirmation, sign-in, password recovery, meal creation, scale logging, image upload, chat streaming, and data separation between two accounts. Configure monitoring and rate limits. Check GDPR/privacy obligations before public launch.
+Configure Supabase Auth Site URL to the production origin. Allow `/auth/callback` and `/auth/callback?next=/reset-password`. Email confirmation and recovery must be tested with your actual email account. Keep Vercel protection enabled for personal use.
 
-## Important limitations
-The current Gemini configuration uses a server-owned key, not encrypted per-athlete BYOK. ChatGPT remote MCP is disabled until a proper OAuth authorization server, scopes, consent, audit logs, and revocation are implemented. The dashboard displays weight EMA as a list, not yet a chart. Public registration must remain disabled until all production tests pass.
+CI installs exact locked dependencies, type-checks, runs unit tests, and builds. Before release, verify food/weight CRUD, chat persistence, meal estimation, export, and two-account isolation. AI request limits are atomic, per account, 60 requests/hour, with counters in a private schema. The intentional default-deny RLS on the counter table has no user-facing policies.
+
+Remote MCP and multi-client coaching are not enabled by this personal-use release.

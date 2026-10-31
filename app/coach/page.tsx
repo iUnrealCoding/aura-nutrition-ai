@@ -1,1 +1,4 @@
-import CoachChat from '@/components/CoachChat';export default function Page(){return <CoachChat/>}
+import CoachChat from "@/components/CoachChat";
+export default function Page() {
+  return <CoachChat />;
+}
