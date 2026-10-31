@@ -1,0 +1,4 @@
+export type WeightLog={created_at:string;raw_weight_lbs:number};
+export function weightEma(logs:WeightLog[],alpha=0.1){return [...logs].sort((a,b)=>Date.parse(a.created_at)-Date.parse(b.created_at)).reduce<{date:string;raw:number;ema:number}[]>((acc,l)=>{const prev=acc.at(-1)?.ema??l.raw_weight_lbs;acc.push({date:l.created_at,raw:l.raw_weight_lbs,ema:alpha*l.raw_weight_lbs+(1-alpha)*prev});return acc},[])}
+export function estimateTdee(caloriesPerDay:number,firstWeight:number,lastWeight:number,days:number){if(days<7||!Number.isFinite(caloriesPerDay))return null;return Math.max(0,caloriesPerDay+((firstWeight-lastWeight)*3500)/days)}
+export function stallReview(phase:string,weights:number[]){if(phase!=='Cut'||weights.length<4)return false;const recent=weights.slice(-4);return Math.max(...recent)-Math.min(...recent)<0.3}
