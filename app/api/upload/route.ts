@@ -12,11 +12,11 @@ export async function POST(req: Request) {
   const file = form.get("file");
   if (
     !(file instanceof File) ||
-    file.size > 5_242_880 ||
+    file.size > 4_194_304 ||
     !["image/jpeg", "image/png", "image/webp"].includes(file.type)
   )
     return NextResponse.json(
-      { error: "Invalid image (max 5 MB)" },
+      { error: "Invalid image (max 4 MB)" },
       { status: 400 },
     );
   const ext = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" }[
@@ -29,4 +29,22 @@ export async function POST(req: Request) {
   return NextResponse.json(error ? { error: error.message } : { path }, {
     status: error ? 400 : 201,
   });
+}
+
+export async function GET(req: Request) {
+  const db = await createClient();
+  const {
+    data: { user },
+  } = await db.auth.getUser();
+  if (!user)
+    return NextResponse.json({ error: "Please sign in" }, { status: 401 });
+  const path = new URL(req.url).searchParams.get("path");
+  if (!path || !path.startsWith(user.id + "/") || path.includes(".."))
+    return NextResponse.json({ error: "Invalid image path" }, { status: 400 });
+  const { data, error } = await db.storage
+    .from("food-images")
+    .createSignedUrl(path, 60);
+  if (error)
+    return NextResponse.json({ error: "Image unavailable" }, { status: 404 });
+  return NextResponse.redirect(data.signedUrl);
 }

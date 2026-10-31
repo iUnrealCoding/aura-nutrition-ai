@@ -241,7 +241,22 @@ export default function Dashboard({ profile }: { profile: Profile }) {
             daily.map((f) => (
               <div className="meal-row" key={f.id}>
                 <div className="meal-icon">
-                  <Utensils size={16} />
+                  {f.image_url ? (
+                    <img
+                      src={
+                        "/api/upload?path=" + encodeURIComponent(f.image_url)
+                      }
+                      alt={f.food_name}
+                      style={{
+                        width: 39,
+                        height: 39,
+                        objectFit: "cover",
+                        borderRadius: 10,
+                      }}
+                    />
+                  ) : (
+                    <Utensils size={16} />
+                  )}
                 </div>
                 <div>
                   <h3>{f.food_name}</h3>

@@ -107,6 +107,7 @@ export default function FoodLogModal({
         </button>
       )}
       <dialog
+        aria-label="Food entry"
         ref={dialog}
         onCancel={(e) => {
           e.preventDefault();
